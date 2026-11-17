@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Vazirmatn", system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --color-ink: #14110f;
+  --color-paper: #f4ebdf;
+  --color-blush: #c4897c;
+  --color-gold: #c4a265;
+  --color-wine: #3c2622;
+  --color-mist: #a8988c;
+  --color-veil: #1c1816;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+  }
+}
+
+@keyframes stitch {
+  from {
+    stroke-dashoffset: 120;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.stitch-line {
+  stroke-dasharray: 120;
+  animation: stitch 1.4s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stitch-line {
+    animation: none;
+  }
+}
