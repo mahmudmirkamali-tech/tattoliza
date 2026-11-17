@@ -18,7 +18,7 @@ function Dust() {
   const ref = useRef<THREE.Points>(null);
   const geo = useMemo(() => {
     const g = new THREE.BufferGeometry();
-    const n = 160;
+    const n = 120;
     const arr = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
@@ -58,7 +58,7 @@ function DressForm() {
       new THREE.Vector2(0.09, 1.1),
       new THREE.Vector2(0.05, 1.32),
     ];
-    return new THREE.LatheGeometry(pts, 64);
+    return new THREE.LatheGeometry(pts, 48);
   }, []);
 
   return (
@@ -74,68 +74,23 @@ function DressForm() {
         <capsuleGeometry args={[0.045, 0.55, 6, 12]} />
         <meshStandardMaterial color="#f3d2c4" roughness={0.5} />
       </mesh>
-      <mesh position={[0, 1.5, 0.02]}>
-        <sphereGeometry args={[0.155, 32, 24]} />
-        <meshStandardMaterial color="#f6d7c8" roughness={0.46} />
-      </mesh>
-      <mesh position={[0, 1.62, -0.04]}>
-        <sphereGeometry args={[0.16, 24, 18]} />
-        <meshStandardMaterial color="#2a1618" roughness={0.7} />
-      </mesh>
     </group>
   );
 }
 
 function InkLine({ zone }: { zone: Zone }) {
   const motif = useAtelier((s) => s.motif);
-  const stitch = useAtelier((s) => s.stitch);
-  const sizeCm = useAtelier((s) => s.sizeCm);
-  const ink = useAtelier((s) => s.ink);
-  const line = useMemo(() => {
-    const geo = lineFrom(motif);
-    const mat = new THREE.LineBasicMaterial({
-      color: "#4a1c28",
-      transparent: true,
-      opacity: 0.45 + ink * 0.55,
-    });
-    const l = new THREE.Line(geo, mat);
-    l.geometry.setDrawRange(0, 2);
-    return l;
-  }, [motif, stitch]);
-
-  useEffect(() => {
-    line.scale.setScalar(0.55 + sizeCm * 0.42);
-    const mat = line.material as THREE.LineBasicMaterial;
-    mat.opacity = 0.45 + ink * 0.55;
-    mat.transparent = true;
-  }, [line, sizeCm, ink]);
-
-  useEffect(() => {
-    const count = line.geometry.getAttribute("position").count;
-    let raf = 0;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      line.geometry.setDrawRange(0, count);
-    } else {
-      const start = performance.now();
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - start) / 1200);
-        const eased = 1 - Math.pow(1 - t, 3);
-        line.geometry.setDrawRange(0, Math.max(2, Math.floor(eased * count)));
-        if (t < 1) raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
-    }
-    return () => cancelAnimationFrame(raf);
-  }, [line]);
-
-  return <primitive object={line} position={ZONE_POS[zone]} />;
-}
-
-function Pearls() {
-  const zone = useAtelier((s) => s.zone);
   const setZone = useAtelier((s) => s.setZone);
+  const pos = ZONE_POS[zone];
+  const lineObj = useMemo(() => {
+    const line = new THREE.Line(lineFrom(motif), new THREE.LineBasicMaterial({ color: "#3a1820" }));
+    line.position.set(pos[0], pos[1], pos[2]);
+    return line;
+  }, [motif, pos]);
+
   return (
     <>
+      <primitive object={lineObj} />
       {(Object.keys(ZONE_POS) as Zone[]).map((z) => (
         <mesh
           key={z}
@@ -154,8 +109,6 @@ function Pearls() {
           <sphereGeometry args={[z === zone ? 0.035 : 0.028, 16, 16]} />
           <meshStandardMaterial
             color={z === zone ? "#6e2e32" : "#c4a265"}
-            emissive={z === zone ? "#6e2e32" : "#000000"}
-            emissiveIntensity={0.35}
             roughness={0.35}
             metalness={0.4}
           />
@@ -206,11 +159,9 @@ function World() {
       <ambientLight intensity={0.38} />
       <directionalLight position={[2.4, 3.2, 2]} intensity={1.4} color="#fff4e6" />
       <pointLight position={[-1.6, 1.2, -1]} intensity={5} color="#c4897c" distance={6} />
-      <spotLight position={[0, 3.4, 1.2]} angle={0.5} penumbra={0.85} intensity={10} color="#f4ebdf" />
       <Float speed={1.1} rotationIntensity={0.04} floatIntensity={0.12}>
         <group>
           <DressForm />
-          <Pearls />
           <InkLine zone={zone} />
         </group>
       </Float>

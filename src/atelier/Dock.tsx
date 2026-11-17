@@ -1,12 +1,7 @@
-import { MOTIFS, ZONES, useAtelier, type Motif } from "./store";
-
-const PATHS: Record<Motif, string> = {
-  bloom: "M12 13c2-4 6-4 6 0s-4 5-6 5-6-1-6-5 4-4 6 0z",
-  moon: "M14 6a6 6 0 1 0 4 10 5 5 0 1 1-4-10z",
-  vine: "M12 18c0-4 2-5 2-8a3 3 0 1 0-3 3c2 0 3-1 4-3",
-  seed: "M12 6c3 3 3 9 0 12-3-3-3-9 0-12z",
-  wave: "M4 13c2-3 4 3 6 0s4 3 6 0 4 3 4 0",
-};
+import { PATHS, type Motif } from "./motifs";
+import { MOTIFS, ZONES, formatPrice, useAtelier } from "./store";
+import { downloadFinal } from "./exportFinal";
+import { MotifGlyph, TryOnCanvas } from "./TryOn";
 
 export function Dock() {
   const motif = useAtelier((s) => s.motif);
@@ -17,6 +12,8 @@ export function Dock() {
   const note = useAtelier((s) => s.note);
   const sizeCm = useAtelier((s) => s.sizeCm);
   const ink = useAtelier((s) => s.ink);
+  const photoUrl = useAtelier((s) => s.photoUrl);
+  const placement = useAtelier((s) => s.placement);
   const setMotif = useAtelier((s) => s.setMotif);
   const setZone = useAtelier((s) => s.setZone);
   const setField = useAtelier((s) => s.setField);
@@ -25,27 +22,31 @@ export function Dock() {
   const openReserve = useAtelier((s) => s.openReserve);
   const openEssay = useAtelier((s) => s.openEssay);
   const openMirror = useAtelier((s) => s.openMirror);
+  const openTryon = useAtelier((s) => s.openTryon);
+  const openQuote = useAtelier((s) => s.openQuote);
   const backToLoom = useAtelier((s) => s.backToLoom);
   const submit = useAtelier((s) => s.submit);
+  const price = useAtelier((s) => s.price);
 
   const zoneMeta = ZONES.find((z) => z.id === zone)!;
   const motifMeta = MOTIFS.find((m) => m.id === motif)!;
+  const currentPrice = price();
 
   return (
-    <section className="pointer-events-auto max-h-96 w-full max-w-xl overflow-y-auto rounded-3xl border border-gold/30 bg-veil/85 p-4 text-paper shadow-2xl backdrop-blur-md sm:p-5">
+    <section className="pointer-events-auto max-h-[80dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-gold/30 bg-veil/90 p-4 text-paper shadow-2xl backdrop-blur-md sm:p-5">
       <header className="mb-3 flex items-end justify-between gap-3">
         <div>
-          <p className="font-display text-sm tracking-[0.22em] text-gold">TATTOOLIZZA</p>
-          <h1 className="text-2xl font-medium leading-tight">استودیو بانوان</h1>
-          <p className="text-xs text-blush">تایم کامل رزرو است</p>
+          <p className="font-display text-sm tracking-widest text-gold">MEHRKHAT</p>
+          <h1 className="text-2xl font-medium leading-tight">مهرخط</h1>
+          <p className="text-xs text-blush">استودیو خصوصی بانوان</p>
         </div>
-        <p className="max-w-40 text-left text-xs leading-relaxed text-mist">{zoneMeta.whisper}</p>
+        <p className="max-w-36 text-left text-xs leading-relaxed text-mist">{zoneMeta.whisper}</p>
       </header>
 
       {panel === "loom" && (
         <>
           <p className="mb-3 text-sm leading-relaxed text-paper/90">
-            فرم زنانه را بچرخان، نقطه را انتخاب کن، بعد نقش را روی پوست آینده‌ات ببین.
+            نقطه طلایی را لمس کن، نقش را انتخاب کن، بعد روی پوست خودت ببین.
           </p>
           <div className="mb-3 flex flex-wrap gap-2">
             {ZONES.map((z) => (
@@ -78,51 +79,113 @@ export function Dock() {
               </button>
             ))}
           </div>
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <button type="button" onClick={openTryon} className="min-h-11 rounded-full border border-gold/50 bg-gold/10 text-sm text-gold">
+              روی پوست خودم
+            </button>
+            <button type="button" onClick={openMirror} className="min-h-11 rounded-full border border-gold/40 text-sm">
+              پیش‌نمایش ساده
+            </button>
+          </div>
           <div className="mb-3 flex gap-2">
-            <button type="button" onClick={openMirror} className="min-h-11 flex-1 rounded-full border border-gold/40 text-sm">
-              پیش‌نمایش نهایی
+            <button type="button" onClick={openQuote} className="min-h-11 flex-1 rounded-full border border-blush/60 text-sm text-blush">
+              قیمت و فاینال
             </button>
             <button type="button" onClick={openEssay} className="min-h-11 flex-1 rounded-full border border-gold/40 text-sm">
-              بُعد فرکانسی
+              فلسفه خط
             </button>
           </div>
           <button type="button" onClick={openReserve} className="min-h-12 w-full rounded-full bg-paper text-sm font-medium text-ink">
-            درخواست لیست انتظار
+            این نقش را برای جلسه نگه دار
           </button>
         </>
       )}
 
+      {panel === "tryon" && (
+        <div className="space-y-3">
+          <p className="text-sm text-mist">عکس محل تتو را بگذار و نقش را جابه‌جا کن.</p>
+          <TryOnCanvas />
+          <div className="flex gap-2">
+            <button type="button" onClick={backToLoom} className="min-h-11 flex-1 rounded-full border border-gold/40 text-sm">
+              برگشت
+            </button>
+            <button type="button" onClick={openQuote} className="min-h-11 flex-1 rounded-full bg-blush text-sm font-medium text-ink">
+              ادامه به قیمت
+            </button>
+          </div>
+        </div>
+      )}
+
       {panel === "mirror" && (
         <div>
-          <p className="mb-2 text-sm text-mist">قبل از سوزن، اندازه و غلظت خط را روی پوست ببین.</p>
+          <p className="mb-2 text-sm text-mist">اندازه و غلظت خط را تنظیم کن.</p>
           <SkinMirror motif={motif} sizeCm={sizeCm} ink={ink} label={`${motifMeta.fa} · ${zoneMeta.fa}`} />
           <label className="mt-3 block text-xs text-mist">
             اندازه تقریبی: {sizeCm} سانتی‌متر
-            <input
-              type="range"
-              min={1.5}
-              max={9}
-              step={0.5}
-              value={sizeCm}
-              onChange={(e) => setSize(Number(e.target.value))}
-              className="mt-1 w-full"
-            />
+            <input type="range" min={1.5} max={9} step={0.5} value={sizeCm} onChange={(e) => setSize(Number(e.target.value))} className="mt-1 w-full" />
           </label>
           <label className="mt-2 block text-xs text-mist">
             غلظت خط
-            <input
-              type="range"
-              min={0.35}
-              max={1}
-              step={0.05}
-              value={ink}
-              onChange={(e) => setInk(Number(e.target.value))}
-              className="mt-1 w-full"
-            />
+            <input type="range" min={0.35} max={1} step={0.05} value={ink} onChange={(e) => setInk(Number(e.target.value))} className="mt-1 w-full" />
           </label>
-          <button type="button" onClick={backToLoom} className="mt-3 min-h-12 w-full rounded-full bg-paper text-sm text-ink">
-            برگشت به فرم
-          </button>
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={backToLoom} className="min-h-11 flex-1 rounded-full border border-gold/40 text-sm">
+              برگشت
+            </button>
+            <button type="button" onClick={openTryon} className="min-h-11 flex-1 rounded-full bg-gold/20 text-sm text-gold">
+              روی عکس خودم
+            </button>
+          </div>
+        </div>
+      )}
+
+      {panel === "quote" && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-gold/30 bg-ink/50 p-4">
+            <p className="text-xs tracking-widest text-gold">فاینال برای تتوکار</p>
+            <h2 className="mt-1 font-display text-3xl text-paper">
+              {motifMeta.fa} · {zoneMeta.fa}
+            </h2>
+            <ul className="mt-3 space-y-1 text-sm text-mist">
+              <li>اندازه تقریبی: {sizeCm} سانتی‌متر</li>
+              <li>غلظت خط: {Math.round(ink * 100)}٪</li>
+              <li>محل: {zoneMeta.fa}</li>
+              <li>{photoUrl ? "پیش‌نمایش روی عکس شخصی آماده است" : "هنوز عکسی نگذاشته‌ای"}</li>
+            </ul>
+            <div className="mt-4 border-t border-gold/20 pt-3">
+              <p className="text-xs text-mist">برآورد قیمت</p>
+              <p className="font-display text-2xl text-gold">{formatPrice(currentPrice)}</p>
+              <p className="mt-1 text-xs leading-relaxed text-mist">
+                قیمت نهایی بعد از دیدن پوست توسط هنرمند مشخص می‌شود.
+              </p>
+            </div>
+          </div>
+          {photoUrl && (
+            <button
+              type="button"
+              className="min-h-11 w-full rounded-full border border-gold/40 text-sm"
+              onClick={() =>
+                void downloadFinal({
+                  photoUrl,
+                  motif,
+                  placement,
+                  sizeCm,
+                  ink,
+                  caption: `${motifMeta.fa} · ${zoneMeta.fa} · ${sizeCm}cm · ${formatPrice(currentPrice)}`,
+                })
+              }
+            >
+              دانلود فاینال برای تتوکار
+            </button>
+          )}
+          <div className="flex gap-2">
+            <button type="button" onClick={backToLoom} className="min-h-11 flex-1 rounded-full border border-gold/40 text-sm">
+              برگشت
+            </button>
+            <button type="button" onClick={openReserve} className="min-h-11 flex-1 rounded-full bg-paper text-sm font-medium text-ink">
+              ثبت در لیست انتظار
+            </button>
+          </div>
         </div>
       )}
 
@@ -130,13 +193,10 @@ export function Dock() {
         <article className="text-sm leading-7">
           <h2 className="font-display text-2xl text-gold">خط، به‌مثابه فرکانس</h2>
           <p className="mt-2">
-            در استودیو Tattoolizza تتو را تزئین نمی‌دانیم. یک نقش ریز، اگر با نیت و جای درست بنشیند، مثل نتی است که بدن از قبل زمزمه می‌کرده و حالا مرئی شده.
+            در مهرخط تتو تزئین نیست. یک نقش ریز، اگر با نیت و جای درست بنشیند، مثل نتی است که بدن از قبل زمزمه می‌کرده.
           </p>
           <p className="mt-2">
-            بُعد روحانی این کار در معناست، نه در ادعای درمان. هلال می‌تواند یاد یک دوره باشد، تاک یاد رشد آرام، دانه یاد چیزی که هنوز دیده نمی‌شود. فرکانس اینجا استعارهٔ دقت است: خط نازک، ضرب‌آهنگ آرام سوزن، و سکوت اتاق. شلوغی بصری نویز است؛ یک خط تمیز، سیگنال.
-          </p>
-          <p className="mt-2">
-            ترقوه نزدیک نفس است، پس‌گردن راز خصوصی، مچ چیزی که هر روز به خودت یادآوری می‌کنی. تایم استودیو پر است. اگر نقش هنوز مال توست، اسمت را برای لیست انتظار بگذار.
+            هلال یاد یک دوره است، تاک رشد آرام، دانه چیزی که هنوز دیده نمی‌شود. شلوغی بصری نویز است؛ یک خط تمیز، سیگنال.
           </p>
           <button type="button" onClick={backToLoom} className="mt-3 min-h-12 w-full rounded-full border border-gold/40 text-sm">
             برگشت
@@ -152,25 +212,22 @@ export function Dock() {
             submit();
           }}
         >
-          <p className="text-sm text-mist">
-            {motifMeta.fa} · حدود {sizeCm} سانتی‌متر · {zoneMeta.fa}. پذیرش فقط وقتی جای خالی از لیست انتظار آزاد شود.
-          </p>
+          <p className="text-sm text-mist">اسم و راه ارتباطی فقط روی همین دستگاه ذخیره می‌شود.</p>
           <label className="text-xs text-mist">
-            نام
+            اسم یا نام مستعار
             <input
-              required
               value={name}
               onChange={(e) => setField("name", e.target.value)}
-              className="mt-1 min-h-11 w-full rounded-xl border border-gold/30 bg-ink px-3 text-sm text-paper outline-none"
+              className="mt-1 w-full rounded-xl border border-gold/30 bg-ink px-3 py-2 text-sm text-paper outline-none"
+              placeholder="مثلاً سارا"
             />
           </label>
           <label className="text-xs text-mist">
-            اینستاگرام
+            اینستاگرام یا شماره
             <input
               value={handle}
               onChange={(e) => setField("handle", e.target.value)}
-              placeholder="@username"
-              className="mt-1 min-h-11 w-full rounded-xl border border-gold/30 bg-ink px-3 text-sm text-paper outline-none"
+              className="mt-1 w-full rounded-xl border border-gold/30 bg-ink px-3 py-2 text-sm text-paper outline-none"
             />
           </label>
           <label className="text-xs text-mist">
@@ -182,6 +239,9 @@ export function Dock() {
               className="mt-1 w-full rounded-xl border border-gold/30 bg-ink px-3 py-2 text-sm text-paper outline-none"
             />
           </label>
+          <div className="rounded-xl border border-gold/20 bg-ink/40 px-3 py-2 text-xs text-mist">
+            {motifMeta.fa} روی {zoneMeta.fa} · حدود {sizeCm}cm · {formatPrice(currentPrice)}
+          </div>
           <div className="flex gap-2">
             <button type="button" onClick={backToLoom} className="min-h-12 flex-1 rounded-full border border-gold/40 text-sm">
               برگشت
@@ -197,7 +257,7 @@ export function Dock() {
         <div className="py-2">
           <p className="font-display text-3xl text-gold">روی لیست نشستی.</p>
           <p className="mt-2 text-sm leading-relaxed">
-            {name || "تو"}، نقش {motifMeta.fa} روی {zoneMeta.fa} ثبت شد. تایم استودیو پر است؛ اگر جای خصوصی باز شود، فقط از همین لیست خبر می‌دهیم.
+            {name || "تو"}، نقش {motifMeta.fa} روی {zoneMeta.fa} ثبت شد. برآورد: {formatPrice(currentPrice)}.
           </p>
           <button type="button" onClick={backToLoom} className="mt-4 min-h-12 w-full rounded-full bg-paper text-sm text-ink">
             یک نقش دیگر
@@ -208,30 +268,12 @@ export function Dock() {
   );
 }
 
-function MotifGlyph({ id }: { id: Motif }) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-      <path d={PATHS[id]} fill="none" stroke="currentColor" strokeWidth="1.2" className="stitch-line" />
-    </svg>
-  );
-}
-
-function SkinMirror({
-  motif,
-  sizeCm,
-  ink,
-  label,
-}: {
-  motif: Motif;
-  sizeCm: number;
-  ink: number;
-  label: string;
-}) {
+function SkinMirror({ motif, sizeCm, ink, label }: { motif: Motif; sizeCm: number; ink: number; label: string }) {
   const scale = 0.55 + sizeCm / 12;
   return (
     <div className="relative overflow-hidden rounded-2xl bg-skin px-4 py-6 text-center">
       <p className="mb-2 text-xs text-wine">{label}</p>
-      <svg viewBox="0 0 24 24" className="mx-auto h-28 w-28" style={{ transform: `scale(${scale})` }} aria-hidden="true">
+      <svg viewBox="0 0 24 24" className="mx-auto h-28 w-28" style={{ transform: `scale(${scale})` }} aria-hidden>
         <path
           d={PATHS[motif]}
           fill="none"

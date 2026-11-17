@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { Motif } from "./store";
+import type { Motif } from "./motifs";
 
 function curve(samples: number, fn: (t: number) => [number, number]): THREE.Vector3[] {
   const pts: THREE.Vector3[] = [];
@@ -12,41 +12,31 @@ function curve(samples: number, fn: (t: number) => [number, number]): THREE.Vect
 
 export function motifPoints(kind: Motif): THREE.Vector3[] {
   if (kind === "bloom") {
-    return curve(280, (u) => {
+    return curve(220, (u) => {
       const t = u * Math.PI * 8;
       const r = 0.11 * Math.abs(Math.sin(4 * t));
       return [Math.cos(t) * r * 1.15, Math.sin(t) * r];
     });
   }
   if (kind === "moon") {
-    return curve(160, (u) => {
+    return curve(140, (u) => {
       const t = Math.PI * 0.25 + u * Math.PI * 1.35;
-      const r = 0.13;
-      return [Math.cos(t) * r, Math.sin(t) * r * 1.05];
+      return [Math.cos(t) * 0.13, Math.sin(t) * 0.13 * 1.05];
     });
   }
   if (kind === "vine") {
-    return curve(220, (u) => {
-      const y = (u - 0.5) * 0.42;
-      const x = Math.sin(u * Math.PI * 3.2) * 0.07;
-      return [x, y];
-    });
+    return curve(180, (u) => [(Math.sin(u * Math.PI * 3.2) * 0.07), (u - 0.5) * 0.42]);
   }
   if (kind === "seed") {
-    return curve(180, (u) => {
+    return curve(160, (u) => {
       const t = u * Math.PI * 2;
       const r = 0.05 + 0.07 * Math.pow(Math.sin(t / 2), 2);
       return [Math.cos(t) * r * 0.72, Math.sin(t) * r * 1.25];
     });
   }
-  return curve(200, (u) => {
-    const x = (u - 0.5) * 0.42;
-    const y = Math.sin(u * Math.PI * 3) * 0.06;
-    return [x, y];
-  });
+  return curve(160, (u) => [(u - 0.5) * 0.42, Math.sin(u * Math.PI * 3) * 0.06]);
 }
 
 export function lineFrom(kind: Motif) {
-  const geo = new THREE.BufferGeometry().setFromPoints(motifPoints(kind));
-  return geo;
+  return new THREE.BufferGeometry().setFromPoints(motifPoints(kind));
 }
