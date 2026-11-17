@@ -33,20 +33,26 @@ type State = {
   motif: Motif;
   zone: Zone;
   stitch: number;
-  panel: "loom" | "reserve" | "done";
+  panel: "loom" | "reserve" | "done" | "essay" | "mirror";
   name: string;
   handle: string;
   note: string;
+  sizeCm: number;
+  ink: number;
   enter: () => void;
   setMotif: (m: Motif) => void;
   setZone: (z: Zone) => void;
   setField: (k: "name" | "handle" | "note", v: string) => void;
+  setSize: (n: number) => void;
+  setInk: (n: number) => void;
   openReserve: () => void;
+  openEssay: () => void;
+  openMirror: () => void;
   backToLoom: () => void;
   submit: () => void;
 };
 
-const KEY = "mehrkhat-bookings";
+const KEY = "tattoolizza-waitlist";
 
 export const useAtelier = create<State>((set, get) => ({
   entered: false,
@@ -57,11 +63,17 @@ export const useAtelier = create<State>((set, get) => ({
   name: "",
   handle: "",
   note: "",
+  sizeCm: 4,
+  ink: 0.85,
   enter: () => set({ entered: true, stitch: 1 }),
-  setMotif: (motif) => set({ motif, stitch: get().stitch + 1, panel: "loom" }),
+  setMotif: (motif) => set({ motif, stitch: get().stitch + 1 }),
   setZone: (zone) => set({ zone, stitch: get().stitch + 1 }),
   setField: (k, v) => set({ [k]: v }),
+  setSize: (sizeCm) => set({ sizeCm }),
+  setInk: (ink) => set({ ink }),
   openReserve: () => set({ panel: "reserve" }),
+  openEssay: () => set({ panel: "essay" }),
+  openMirror: () => set({ panel: "mirror" }),
   backToLoom: () => set({ panel: "loom" }),
   submit: () => {
     const s = get();

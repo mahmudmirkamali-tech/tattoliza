@@ -3,7 +3,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "مهرخط";
+const APP_NAME = "Tattoolizza";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -13,7 +13,7 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "آتلیهٔ مهرخط — تتوی ظریف زنانه، جایی که خط روی پوست معنا می‌گیرد.",
+        content: "استودیو Tattoolizza مخصوص بانوان — تایم کامل رزرو است. پیش‌نمایش نقش پیش از جلسه.",
       },
       { name: "theme-color", content: "#14110F" },
     ],

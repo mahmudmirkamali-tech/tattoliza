@@ -1,4 +1,12 @@
-import { MOTIFS, ZONES, useAtelier } from "./store";
+import { MOTIFS, ZONES, useAtelier, type Motif } from "./store";
+
+const PATHS: Record<Motif, string> = {
+  bloom: "M12 13c2-4 6-4 6 0s-4 5-6 5-6-1-6-5 4-4 6 0z",
+  moon: "M14 6a6 6 0 1 0 4 10 5 5 0 1 1-4-10z",
+  vine: "M12 18c0-4 2-5 2-8a3 3 0 1 0-3 3c2 0 3-1 4-3",
+  seed: "M12 6c3 3 3 9 0 12-3-3-3-9 0-12z",
+  wave: "M4 13c2-3 4 3 6 0s4 3 6 0 4 3 4 0",
+};
 
 export function Dock() {
   const motif = useAtelier((s) => s.motif);
@@ -7,10 +15,16 @@ export function Dock() {
   const name = useAtelier((s) => s.name);
   const handle = useAtelier((s) => s.handle);
   const note = useAtelier((s) => s.note);
+  const sizeCm = useAtelier((s) => s.sizeCm);
+  const ink = useAtelier((s) => s.ink);
   const setMotif = useAtelier((s) => s.setMotif);
   const setZone = useAtelier((s) => s.setZone);
   const setField = useAtelier((s) => s.setField);
+  const setSize = useAtelier((s) => s.setSize);
+  const setInk = useAtelier((s) => s.setInk);
   const openReserve = useAtelier((s) => s.openReserve);
+  const openEssay = useAtelier((s) => s.openEssay);
+  const openMirror = useAtelier((s) => s.openMirror);
   const backToLoom = useAtelier((s) => s.backToLoom);
   const submit = useAtelier((s) => s.submit);
 
@@ -18,11 +32,12 @@ export function Dock() {
   const motifMeta = MOTIFS.find((m) => m.id === motif)!;
 
   return (
-    <section className="pointer-events-auto max-h-80 w-full max-w-xl overflow-y-auto rounded-3xl border border-gold/30 bg-veil/80 p-4 text-paper shadow-2xl backdrop-blur-md sm:p-5">
+    <section className="pointer-events-auto max-h-96 w-full max-w-xl overflow-y-auto rounded-3xl border border-gold/30 bg-veil/85 p-4 text-paper shadow-2xl backdrop-blur-md sm:p-5">
       <header className="mb-3 flex items-end justify-between gap-3">
         <div>
-          <p className="font-display text-sm tracking-[0.28em] text-gold">MEHRKHAT</p>
-          <h1 className="text-2xl font-medium leading-tight">مهرخط</h1>
+          <p className="font-display text-sm tracking-[0.22em] text-gold">TATTOOLIZZA</p>
+          <h1 className="text-2xl font-medium leading-tight">استودیو بانوان</h1>
+          <p className="text-xs text-blush">تایم کامل رزرو است</p>
         </div>
         <p className="max-w-40 text-left text-xs leading-relaxed text-mist">{zoneMeta.whisper}</p>
       </header>
@@ -30,7 +45,7 @@ export function Dock() {
       {panel === "loom" && (
         <>
           <p className="mb-3 text-sm leading-relaxed text-paper/90">
-            فرم را بچرخان. یک نقطهٔ طلایی را لمس کن، بعد نقش را انتخاب کن تا خط، زنده روی پوست کشیده شود.
+            فرم زنانه را بچرخان، نقطه را انتخاب کن، بعد نقش را روی پوست آینده‌ات ببین.
           </p>
           <div className="mb-3 flex flex-wrap gap-2">
             {ZONES.map((z) => (
@@ -40,9 +55,7 @@ export function Dock() {
                 onClick={() => setZone(z.id)}
                 className={
                   "min-h-11 rounded-full border px-3 text-sm " +
-                  (zone === z.id
-                    ? "border-blush bg-blush text-ink"
-                    : "border-gold/40 bg-transparent text-paper")
+                  (zone === z.id ? "border-blush bg-blush text-ink" : "border-gold/40 text-paper")
                 }
               >
                 {z.fa}
@@ -57,9 +70,7 @@ export function Dock() {
                 onClick={() => setMotif(m.id)}
                 className={
                   "flex min-h-14 flex-col items-center justify-center rounded-2xl border text-xs " +
-                  (motif === m.id
-                    ? "border-gold bg-gold/15 text-gold"
-                    : "border-paper/15 text-mist")
+                  (motif === m.id ? "border-gold bg-gold/15 text-gold" : "border-paper/15 text-mist")
                 }
               >
                 <MotifGlyph id={m.id} />
@@ -67,14 +78,70 @@ export function Dock() {
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={openReserve}
-            className="min-h-12 w-full rounded-full bg-paper text-sm font-medium text-ink"
-          >
-            این نقش را برای جلسه نگه دار
+          <div className="mb-3 flex gap-2">
+            <button type="button" onClick={openMirror} className="min-h-11 flex-1 rounded-full border border-gold/40 text-sm">
+              پیش‌نمایش نهایی
+            </button>
+            <button type="button" onClick={openEssay} className="min-h-11 flex-1 rounded-full border border-gold/40 text-sm">
+              بُعد فرکانسی
+            </button>
+          </div>
+          <button type="button" onClick={openReserve} className="min-h-12 w-full rounded-full bg-paper text-sm font-medium text-ink">
+            درخواست لیست انتظار
           </button>
         </>
+      )}
+
+      {panel === "mirror" && (
+        <div>
+          <p className="mb-2 text-sm text-mist">قبل از سوزن، اندازه و غلظت خط را روی پوست ببین.</p>
+          <SkinMirror motif={motif} sizeCm={sizeCm} ink={ink} label={`${motifMeta.fa} · ${zoneMeta.fa}`} />
+          <label className="mt-3 block text-xs text-mist">
+            اندازه تقریبی: {sizeCm} سانتی‌متر
+            <input
+              type="range"
+              min={1.5}
+              max={9}
+              step={0.5}
+              value={sizeCm}
+              onChange={(e) => setSize(Number(e.target.value))}
+              className="mt-1 w-full"
+            />
+          </label>
+          <label className="mt-2 block text-xs text-mist">
+            غلظت خط
+            <input
+              type="range"
+              min={0.35}
+              max={1}
+              step={0.05}
+              value={ink}
+              onChange={(e) => setInk(Number(e.target.value))}
+              className="mt-1 w-full"
+            />
+          </label>
+          <button type="button" onClick={backToLoom} className="mt-3 min-h-12 w-full rounded-full bg-paper text-sm text-ink">
+            برگشت به فرم
+          </button>
+        </div>
+      )}
+
+      {panel === "essay" && (
+        <article className="text-sm leading-7">
+          <h2 className="font-display text-2xl text-gold">خط، به‌مثابه فرکانس</h2>
+          <p className="mt-2">
+            در استودیو Tattoolizza تتو را تزئین نمی‌دانیم. یک نقش ریز، اگر با نیت و جای درست بنشیند، مثل نتی است که بدن از قبل زمزمه می‌کرده و حالا مرئی شده.
+          </p>
+          <p className="mt-2">
+            بُعد روحانی این کار در معناست، نه در ادعای درمان. هلال می‌تواند یاد یک دوره باشد، تاک یاد رشد آرام، دانه یاد چیزی که هنوز دیده نمی‌شود. فرکانس اینجا استعارهٔ دقت است: خط نازک، ضرب‌آهنگ آرام سوزن، و سکوت اتاق. شلوغی بصری نویز است؛ یک خط تمیز، سیگنال.
+          </p>
+          <p className="mt-2">
+            ترقوه نزدیک نفس است، پس‌گردن راز خصوصی، مچ چیزی که هر روز به خودت یادآوری می‌کنی. تایم استودیو پر است. اگر نقش هنوز مال توست، اسمت را برای لیست انتظار بگذار.
+          </p>
+          <button type="button" onClick={backToLoom} className="mt-3 min-h-12 w-full rounded-full border border-gold/40 text-sm">
+            برگشت
+          </button>
+        </article>
       )}
 
       {panel === "reserve" && (
@@ -86,7 +153,7 @@ export function Dock() {
           }}
         >
           <p className="text-sm text-mist">
-            {motifMeta.fa} روی {zoneMeta.fa}. جلسه خصوصی است؛ فقط خانم‌ها، فقط فاین‌لاین.
+            {motifMeta.fa} · حدود {sizeCm} سانتی‌متر · {zoneMeta.fa}. پذیرش فقط وقتی جای خالی از لیست انتظار آزاد شود.
           </p>
           <label className="text-xs text-mist">
             نام
@@ -120,7 +187,7 @@ export function Dock() {
               برگشت
             </button>
             <button type="submit" className="min-h-12 flex-1 rounded-full bg-blush text-sm font-medium text-ink">
-              درخواست جلسه
+              ثبت در لیست انتظار
             </button>
           </div>
         </form>
@@ -128,9 +195,9 @@ export function Dock() {
 
       {panel === "done" && (
         <div className="py-2">
-          <p className="font-display text-3xl text-gold">نگه داشته شد.</p>
+          <p className="font-display text-3xl text-gold">روی لیست نشستی.</p>
           <p className="mt-2 text-sm leading-relaxed">
-            {name || "تو"}، نقش {motifMeta.fa} روی {zoneMeta.fa} در دفتر آتلیه نشست. این یک پیش‌نویس خصوصی است تا روز جلسه.
+            {name || "تو"}، نقش {motifMeta.fa} روی {zoneMeta.fa} ثبت شد. تایم استودیو پر است؛ اگر جای خصوصی باز شود، فقط از همین لیست خبر می‌دهیم.
           </p>
           <button type="button" onClick={backToLoom} className="mt-4 min-h-12 w-full rounded-full bg-paper text-sm text-ink">
             یک نقش دیگر
@@ -141,20 +208,41 @@ export function Dock() {
   );
 }
 
-function MotifGlyph({ id }: { id: string }) {
-  const d =
-    id === "bloom"
-      ? "M12 13c2-4 6-4 6 0s-4 5-6 5-6-1-6-5 4-4 6 0z"
-      : id === "moon"
-        ? "M14 6a6 6 0 1 0 4 10 5 5 0 1 1-4-10z"
-        : id === "vine"
-          ? "M12 18c0-4 2-5 2-8a3 3 0 1 0-3 3c2 0 3-1 4-3"
-          : id === "seed"
-            ? "M12 6c3 3 3 9 0 12-3-3-3-9 0-12z"
-            : "M4 13c2-3 4 3 6 0s4 3 6 0 4 3 4 0";
+function MotifGlyph({ id }: { id: Motif }) {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-      <path d={d} fill="none" stroke="currentColor" strokeWidth="1.2" className="stitch-line" />
+      <path d={PATHS[id]} fill="none" stroke="currentColor" strokeWidth="1.2" className="stitch-line" />
     </svg>
+  );
+}
+
+function SkinMirror({
+  motif,
+  sizeCm,
+  ink,
+  label,
+}: {
+  motif: Motif;
+  sizeCm: number;
+  ink: number;
+  label: string;
+}) {
+  const scale = 0.55 + sizeCm / 12;
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-skin px-4 py-6 text-center">
+      <p className="mb-2 text-xs text-wine">{label}</p>
+      <svg viewBox="0 0 24 24" className="mx-auto h-28 w-28" style={{ transform: `scale(${scale})` }} aria-hidden="true">
+        <path
+          d={PATHS[motif]}
+          fill="none"
+          stroke="currentColor"
+          className="text-inkline"
+          strokeWidth={0.6 + ink * 1.1}
+          strokeLinecap="round"
+          opacity={0.45 + ink * 0.55}
+        />
+      </svg>
+      <p className="text-xs text-wine">حدود {sizeCm} سانتی‌متر روی پوست</p>
+    </div>
   );
 }

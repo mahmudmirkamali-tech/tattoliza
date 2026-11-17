@@ -19,7 +19,7 @@ function Home() {
   if (!View) {
     return (
       <main className="flex h-dvh items-center justify-center bg-ink text-paper">
-        <p className="font-display text-3xl">مهرخط</p>
+        <p className="font-display text-3xl">Tattoolizza</p>
       </main>
     );
   }

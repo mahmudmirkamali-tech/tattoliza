@@ -45,38 +45,70 @@ function Dust() {
 function DressForm() {
   const geo = useMemo(() => {
     const pts = [
-      new THREE.Vector2(0.01, -1.45),
-      new THREE.Vector2(0.16, -1.4),
-      new THREE.Vector2(0.2, -1.05),
-      new THREE.Vector2(0.28, -0.55),
-      new THREE.Vector2(0.22, -0.05),
-      new THREE.Vector2(0.16, 0.28),
-      new THREE.Vector2(0.27, 0.58),
-      new THREE.Vector2(0.2, 0.86),
-      new THREE.Vector2(0.08, 1.08),
-      new THREE.Vector2(0.045, 1.28),
+      new THREE.Vector2(0.055, -1.62),
+      new THREE.Vector2(0.09, -1.42),
+      new THREE.Vector2(0.115, -1.05),
+      new THREE.Vector2(0.1, -0.72),
+      new THREE.Vector2(0.15, -0.38),
+      new THREE.Vector2(0.3, -0.08),
+      new THREE.Vector2(0.2, 0.22),
+      new THREE.Vector2(0.16, 0.38),
+      new THREE.Vector2(0.28, 0.62),
+      new THREE.Vector2(0.2, 0.9),
+      new THREE.Vector2(0.09, 1.1),
+      new THREE.Vector2(0.05, 1.32),
     ];
-    return new THREE.LatheGeometry(pts, 48);
+    return new THREE.LatheGeometry(pts, 64);
   }, []);
 
   return (
-    <mesh geometry={geo} castShadow>
-      <meshStandardMaterial color="#fff6ec" roughness={0.42} metalness={0.06} />
-    </mesh>
+    <group>
+      <mesh geometry={geo} castShadow>
+        <meshStandardMaterial color="#f3d2c4" roughness={0.48} metalness={0.04} />
+      </mesh>
+      <mesh position={[-0.34, 0.72, 0.02]} rotation={[0.2, 0, 0.55]}>
+        <capsuleGeometry args={[0.045, 0.55, 6, 12]} />
+        <meshStandardMaterial color="#f3d2c4" roughness={0.5} />
+      </mesh>
+      <mesh position={[0.34, 0.72, 0.02]} rotation={[0.2, 0, -0.55]}>
+        <capsuleGeometry args={[0.045, 0.55, 6, 12]} />
+        <meshStandardMaterial color="#f3d2c4" roughness={0.5} />
+      </mesh>
+      <mesh position={[0, 1.5, 0.02]}>
+        <sphereGeometry args={[0.155, 32, 24]} />
+        <meshStandardMaterial color="#f6d7c8" roughness={0.46} />
+      </mesh>
+      <mesh position={[0, 1.62, -0.04]}>
+        <sphereGeometry args={[0.16, 24, 18]} />
+        <meshStandardMaterial color="#2a1618" roughness={0.7} />
+      </mesh>
+    </group>
   );
 }
 
 function InkLine({ zone }: { zone: Zone }) {
   const motif = useAtelier((s) => s.motif);
   const stitch = useAtelier((s) => s.stitch);
+  const sizeCm = useAtelier((s) => s.sizeCm);
+  const ink = useAtelier((s) => s.ink);
   const line = useMemo(() => {
     const geo = lineFrom(motif);
-    const mat = new THREE.LineBasicMaterial({ color: "#6e2e32" });
+    const mat = new THREE.LineBasicMaterial({
+      color: "#4a1c28",
+      transparent: true,
+      opacity: 0.45 + ink * 0.55,
+    });
     const l = new THREE.Line(geo, mat);
-    l.scale.set(2.6, 2.6, 2.6);
     l.geometry.setDrawRange(0, 2);
     return l;
   }, [motif, stitch]);
+
+  useEffect(() => {
+    line.scale.setScalar(0.55 + sizeCm * 0.42);
+    const mat = line.material as THREE.LineBasicMaterial;
+    mat.opacity = 0.45 + ink * 0.55;
+    mat.transparent = true;
+  }, [line, sizeCm, ink]);
 
   useEffect(() => {
     const count = line.geometry.getAttribute("position").count;
@@ -178,10 +210,6 @@ function World() {
       <Float speed={1.1} rotationIntensity={0.04} floatIntensity={0.12}>
         <group>
           <DressForm />
-          <mesh position={[0, 1.48, 0]}>
-            <sphereGeometry args={[0.16, 32, 24]} />
-            <meshStandardMaterial color="#f3e9dc" roughness={0.48} metalness={0.02} />
-          </mesh>
           <Pearls />
           <InkLine zone={zone} />
         </group>

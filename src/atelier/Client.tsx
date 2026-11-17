@@ -15,17 +15,18 @@ export function AtelierClient() {
       {!entered && (
         <div className="absolute inset-0 flex items-center justify-center px-5">
           <div className="max-w-md text-center">
-            <p className="font-display text-sm tracking-[0.35em] text-gold">ATELIER</p>
-            <h1 className="mt-2 font-display text-6xl leading-none text-paper">مهرخط</h1>
+            <p className="font-display text-sm tracking-[0.35em] text-gold">STUDIO · WOMEN ONLY</p>
+            <h1 className="mt-2 font-display text-5xl leading-none text-paper sm:text-6xl">Tattoolizza</h1>
+            <p className="mx-auto mt-3 text-sm text-blush">مخصوص بانوان · تایم این دوره کامل رزرو است</p>
             <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-mist">
-              اینجا تتو فروخته نمی‌شود. یک خط ظریف، روی پوست یک زن، توسط یک زن طراحی می‌شود. فرم را بچرخان و ببین خط چطور متولد می‌شود.
+              جای خالی فروخته نمی‌شود. اگر نقش‌ات با فرم هم‌خوان باشد، اسمت روی لیست انتظار خصوصی می‌نشیند. قبل از هر سوزن، نتیجه را روی پوست ببین.
             </p>
             <button
               type="button"
               onClick={enter}
               className="mt-8 min-h-12 rounded-full bg-paper px-8 text-sm font-medium text-ink"
             >
-              وارد اتاقِ خط شو
+              ورود به اتاق خصوصی
             </button>
           </div>
         </div>
